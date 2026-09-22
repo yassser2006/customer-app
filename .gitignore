@@ -1,0 +1,16 @@
+# Environment files
+.env
+.env.*
+
+# Real deployment config files (keep local-only)
+agentcore/agentcore.json
+agentcore/aws-targets.json
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
+
