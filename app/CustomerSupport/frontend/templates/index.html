@@ -36,6 +36,11 @@ body {
   padding: 8px 0;
 }
 .status .connected { color: #27ae60; }
+.status .user-badge {
+  color: #d32f2f;
+  font-weight: 700;
+  margin-left: 8px;
+}
 .status .btn-new {
   padding: 4px 12px;
   border-radius: 8px;
@@ -134,7 +139,7 @@ body {
   <div class="status">
     <span class="connected">● Connected</span> — {{ runtime_arn_display }}
     <button class="btn-new" onclick="newSession()">🔄 New Session</button>
-    <span>� {{ username }}</span>
+    <span class="user-badge">{{ username }}</span>
     <span id="sessionLabel"></span>
   </div>
   <div class="header" id="header">

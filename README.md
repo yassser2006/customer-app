@@ -42,11 +42,15 @@ The following screenshots capture representative validation scenarios for the ch
 
 ![Clean chat](image/1-new-chat-s1.png)
 
+This shows the empty support chat before the user sends a message, confirming the chat UI loads correctly and is ready for a new session.
+
 The starting state shows an empty chat session before any customer message is sent, validating the UI and session initialization path.
 
 ### 2. Greeting
 
 ![Greeting](image/2-Greeting-s1.png)
+
+The agent responds politely to a simple greeting and confirms it is ready to assist with support requests.
 
 This shows the agent responding naturally to a greeting and confirming it is ready to help with support queries.
 
@@ -54,11 +58,15 @@ This shows the agent responding naturally to a greeting and confirming it is rea
 
 ![Checking an order](image/3-checking-orders-s1.png)
 
+The user asks about an order status, and the agent uses its order lookup capability to retrieve the relevant details.
+
 The customer asks about an order, and the agent uses the order lookup tool to return the relevant status and purchase details.
 
 ### 4. Asking about the customer name
 
 ![Name lookup](image/4-name-s1.png)
+
+The agent does not yet know the user’s name from memory, so the customer provides it and the conversation continues normally.
 
 The agent does not know the customer name from context, so the customer provides it and the conversation continues normally. This demonstrates the difference between memory state and a first-time conversational context.
 
@@ -66,11 +74,15 @@ The agent does not know the customer name from context, so the customer provides
 
 ![Memory across sessions](image/5-Memory-s2.png)
 
+A new chat session still remembers customer details from a previous interaction, demonstrating long-term conversational memory.
+
 The agent recognizes the customer in a new session and answers using remembered context, confirming that memory persists across separate conversations.
 
 ### 6. Refund under $1,000
 
 ![Refund under $1,000](image/6-refund-under-1000-s2-p1.png)
+
+The customer requests a refund below policy limits, and the agent proceeds with the approved refund flow.
 
 The customer requests a refund within the allowed threshold, and the agent follows the workflow for a permitted refund action.
 
@@ -78,17 +90,21 @@ The customer requests a refund within the allowed threshold, and the agent follo
 
 ![Refund continuation](image/7-refund-under-1000-s2-p2.png)
 
+The same refund case continues to completion, showing the agent following the approved workflow without violating policy.
+
 This continues the same refund flow and shows the agent completing the supported policy path without interruption.
 
 ### 8. Refunding a previously refunded order
 
 ![Duplicate refund attempt](image/8-refund-under-1000-s2-duplicated.png)
-
+The agent detects that the order was already refunded and prevents a duplicate refund instead of repeating the action.
 This demonstrates the retry and duplicate-protection behavior: the system does not create a duplicate refund when the same action is attempted again.
 
 ### 9. Refunding a canceled order
 
 ![Canceled order refund](image/9-refund-under-1000-s2-cancelled.png)
+
+The agent recognizes the order is canceled and blocks the refund flow because the request is not valid for that order state.
 
 The agent handles a canceled-order scenario and prevents a refund flow that should not proceed for an order in an invalid state.
 
@@ -96,9 +112,41 @@ The agent handles a canceled-order scenario and prevents a refund flow that shou
 
 ![Refund above threshold denied](image/10-refund-above-1000-s3-refused.png)
 
+The refund request exceeds the allowed limit, so the agent refuses the action and enforces the policy guardrail.
+
 This is the denial case. The refund request exceeds the policy threshold, and the agent is blocked by the authorization guard, showing the policy enforcement result: refund greater than $1,000 is denied.
 
 These screenshots together illustrate the main customer support path, memory continuity, refund authorization logic, duplicate-prevention behavior, and policy enforcement during failure and edge scenarios.
+
+### Additional validation screenshots
+
+![Prompt injection attempt](image/11-prompt-injection.png)
+
+This screenshot shows the system resisting a prompt-injection attempt and keeping the agent on the safe support workflow.
+
+![Refund exact $1,000 continuation](image/12-%20refund-exact-1000-p1.png)
+
+This case validates the policy boundary at the exact $1,000 threshold, confirming the refund is allowed when it meets the limit.
+
+![Refund exact $1,000 completion](image/13-%20refund-exact-1000-p2.png)
+
+The workflow completes for the exact-threshold refund, proving the system behaves correctly at the edge of the approval rule.
+
+![Refund over $1,000 part 1](image/14-%20refund-exact-1001-p1.png)
+
+This image captures the start of a refund above the limit, where the agent begins evaluating whether the request is authorized.
+
+![Refund over $1,000 part 2](image/15-%20refund-exact-1001-p2.png)
+
+The continuation shows the agent enforcing the denial path when the request exceeds the maximum allowed refund amount.
+
+![Evaluation metrics](image/16-Evaluation-metrics.png)
+
+This screenshot summarizes the evaluation metrics used to verify the support agent’s quality, safety, and policy compliance.
+
+![Different memory states](image/17-Different-memory.png)
+
+This image highlights how memory context differs across conversations and shows why personalized support remains consistent over time.
 
 ## Major components
 

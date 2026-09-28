@@ -35,6 +35,8 @@ PRODUCTS = {
     "PROD-004": {"name": "USB-C Hub", "price": 54.99, "category": "accessories", "description": "7-in-1 USB-C hub with HDMI, USB-A, SD card reader, and ethernet", "warranty_months": 12},
     "PROD-005": {"name": "Mechanical Keyboard", "price": 129.99, "category": "electronics", "description": "RGB mechanical keyboard with Cherry MX switches", "warranty_months": 24},
     "PROD-006": {"name": "Bluetooth Speaker", "price": 1199.99, "category": "audio", "description": "Portable Bluetooth speaker with 360° sound and waterproof design", "warranty_months": 12},
+    "PROD-007": {"name": "Noise-Cancelling Earbuds", "price": 1000.00, "category": "audio", "description": "True wireless earbuds with active noise cancellation and touch controls", "warranty_months": 12},
+    "PROD-008": {"name": "4K Action Camera", "price": 1001.99, "category": "electronics", "description": "Waterproof action camera with 4K video recording and Wi-Fi connectivity", "warranty_months": 12},
 }
 
 ORDERS = {
@@ -42,7 +44,9 @@ ORDERS = {
     "ORD-67890": {"status": "Processing", "items": ["Smart Watch"], "total": 249.99},
     "ORD-54321": {"status": "Delivered", "items": ["Laptop Stand", "Mechanical Keyboard"], "total": 169.98},
     "ORD-98765": {"status": "Cancelled", "items": ["Smart Watch", "Smart Watch", "Smart Watch", "Smart Watch", "Smart Watch"], "total": 1249.95},
-    "ORD-00000": {"status": "Delivered", "items": ["Bluetooth Speaker"], "total": 1199.99}
+    "ORD-00000": {"status": "Delivered", "items": ["Bluetooth Speaker"], "total": 1199.99},
+    "ORD-93847": {"status": "Delivered", "items": ["Noise-Cancelling Earbuds"], "total": 1000.00},
+    "ORD-97445": {"status": "Delivered", "items": ["4K Action Camera"], "total": 1001.99},
 }
 
 @tool
@@ -104,10 +108,14 @@ def get_order(order_id: str) -> str:
 
 # --- Agent Setup ---
 
-_agent = None
+_agent_cache = {}
+
 
 def get_or_create_agent(session_id, user_id, auth_header):
-    global _agent
+    key = (session_id, user_id)
+    agent = _agent_cache.get(key)
+    if agent is not None:
+        return agent
 
     session_manager = get_memory_session_manager(session_id, user_id)
 
@@ -120,14 +128,14 @@ def get_or_create_agent(session_id, user_id, auth_header):
         if mcp_client:
             tools.append(mcp_client)
 
-    if _agent is None:
-        _agent = Agent(
-            model=load_model(),
-            session_manager=session_manager,
-            system_prompt=SYSTEM_PROMPT,
-            tools=tools
-        )
-    return _agent
+    agent = Agent(
+        model=load_model(),
+        session_manager=session_manager,
+        system_prompt=SYSTEM_PROMPT,
+        tools=tools,
+    )
+    _agent_cache[key] = agent
+    return agent
 
 def extract_user_id(auth_header) -> str | None:
     """Extract user_id from JWT bearer token (username claim) or fall back to custom header."""

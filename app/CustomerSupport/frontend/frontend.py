@@ -1,12 +1,15 @@
 import json
 import os
-import uuid
-import urllib.parse
 from pathlib import Path
-from flask import Flask, render_template
+
 import boto3
+from dotenv import load_dotenv
+from flask import Flask, redirect, render_template, request, session, url_for
+
+load_dotenv()
 
 app = Flask(__name__)
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "customer-support-dev-secret")
 
 # The Workshop Studio Code Editor exposes local ports through CloudFront.
 # Disable origin caching so proxies that honor origin headers request fresh
@@ -44,6 +47,7 @@ def get_runtime_arn():
         pass
     return None
 
+
 def get_ssm_param(name):
     return ssm_client.get_parameter(Name=name)["Parameter"]["Value"]
 
@@ -60,10 +64,12 @@ def mask_aws_account_id(arn: str) -> str:
     return arn
 
 
-def get_access_token():
+def get_access_token(username=None, password=None):
     """Authenticate against Cognito and return an access token."""
-    if not WORKSHOP_USER or not WORKSHOP_PASS:
-        print("❌ Missing WORKSHOP_USER or WORKSHOP_PASS environment variables.")
+    username = (username or WORKSHOP_USER or "").strip()
+    password = (password or WORKSHOP_PASS or "").strip()
+    if not username or not password:
+        print("❌ Missing username or password.")
         return None
 
     try:
@@ -71,33 +77,62 @@ def get_access_token():
         resp = cognito_client.initiate_auth(
             AuthFlow="USER_PASSWORD_AUTH",
             ClientId=client_id,
-            AuthParameters={"USERNAME": WORKSHOP_USER, "PASSWORD": WORKSHOP_PASS},
+            AuthParameters={"USERNAME": username, "PASSWORD": password},
         )
         token = resp["AuthenticationResult"]["AccessToken"]
-        print(f"✅ Authenticated as {WORKSHOP_USER}")
+        print(f"✅ Authenticated as {username}")
         return token
     except Exception as e:
-        print(f"❌ Authentication failed: {e}")
+        print(f"❌ Authentication failed for {username}: {e}")
         return None
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+
+        if not username or not password:
+            return render_template("login.html", error="Please enter both username and password."), 400
+
+        token = get_access_token(username, password)
+        if not token:
+            return render_template("login.html", error="Invalid username or password.", username=username), 401
+
+        session["token"] = token
+        session["username"] = username
+        return redirect(url_for("index"))
+
+    return render_template("login.html", error=None, username="")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 
 @app.route("/")
 def index():
-    token = get_access_token()
-    if not token:
-        return "<h2>Authentication failed. Check workshop user credentials and Cognito configuration.</h2>", 500
+    token = session.get("token")
+    username = session.get("username")
+    if not token or not username:
+        return redirect(url_for("login"))
+
     runtime_arn = get_runtime_arn() or "NOT_DEPLOYED"
     runtime_arn_display = mask_aws_account_id(runtime_arn)
-    return render_template("index.html",
-                           token=token,
-                           runtime_arn=runtime_arn,
-                           runtime_arn_display=runtime_arn_display,
-                           region=REGION,
-                           endpoint=AGENTCORE_ENDPOINT,
-                           username=WORKSHOP_USER)
+    return render_template(
+        "index.html",
+        token=token,
+        runtime_arn=runtime_arn,
+        runtime_arn_display=runtime_arn_display,
+        region=REGION,
+        endpoint=AGENTCORE_ENDPOINT,
+        username=username,
+    )
+
 
 if __name__ == "__main__":
     print(f"Runtime ARN: {get_runtime_arn() or 'NOT FOUND'}")
-    # Verify auth works on startup
-    get_access_token()
     app.run(host="0.0.0.0", port=8501)

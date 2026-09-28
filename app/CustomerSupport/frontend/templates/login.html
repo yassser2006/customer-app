@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Support Login</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(180deg, #d6eaf8 0%, #ebf0f5 40%, #f5f7fa 100%);
+      color: #1a1a2e;
+    }
+    .login-card {
+      width: min(420px, 90vw);
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(17, 24, 39, 0.08);
+      border-radius: 20px;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
+      padding: 32px 28px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      text-align: center;
+    }
+    p {
+      margin: 0 0 24px;
+      color: #4b5563;
+      text-align: center;
+      font-size: 14px;
+    }
+    .field {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 15px;
+      outline: none;
+      background: white;
+    }
+    input:focus {
+      border-color: #1a1a2e;
+      box-shadow: 0 0 0 3px rgba(26, 26, 46, 0.08);
+    }
+    .error {
+      margin-bottom: 16px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+      font-size: 14px;
+    }
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      background: #1a1a2e;
+      color: white;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    button:hover { background: #2d2d4e; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <h1>Customer Support</h1>
+    <p>Sign in to continue to your support dashboard</p>
+
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" value="{{ username or '' }}" placeholder="Enter your username" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" placeholder="Enter your password" required>
+      </div>
+      <button type="submit">Log In</button>
+    </form>
+  </div>
+</body>
+</html>
