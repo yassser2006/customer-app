@@ -108,11 +108,18 @@ def get_order(order_id: str) -> str:
 
 # --- Agent Setup ---
 
+import hashlib
+
 _agent_cache = {}
 
 
+def _agent_cache_key(session_id, user_id, auth_header):
+    token_fingerprint = hashlib.sha256((auth_header or "").encode("utf-8")).hexdigest()
+    return (session_id, user_id, token_fingerprint)
+
+
 def get_or_create_agent(session_id, user_id, auth_header):
-    key = (session_id, user_id)
+    key = _agent_cache_key(session_id, user_id, auth_header)
     agent = _agent_cache.get(key)
     if agent is not None:
         return agent
@@ -136,6 +143,26 @@ def get_or_create_agent(session_id, user_id, auth_header):
     )
     _agent_cache[key] = agent
     return agent
+
+def is_prompt_injection_attempt(prompt: str) -> bool:
+    """Reject obvious prompt-injection attempts that try to override system instructions."""
+    if not isinstance(prompt, str):
+        return False
+
+    normalized = prompt.lower()
+    markers = [
+        "ignore previous instructions",
+        "ignore all previous instructions",
+        "override system",
+        "developer prompt",
+        "system prompt",
+        "you are now",
+        "new instructions",
+        "ignore the above",
+        "reset your instructions",
+    ]
+    return any(marker in normalized for marker in markers)
+
 
 def extract_user_id(auth_header) -> str | None:
     """Extract user_id from JWT bearer token (username claim) or fall back to custom header."""
@@ -174,8 +201,14 @@ async def invoke(payload, context):
     if not session_id or not user_id:
         raise ValueError("session_id and user_id are required. Pass --session-id and --user-id when invoking.")
 
+    prompt = payload.get("prompt", "")
+    if not isinstance(prompt, str):
+        raise ValueError("Prompt must be a string.")
+    if is_prompt_injection_attempt(prompt):
+        raise ValueError("Prompt injection attempt detected.")
+
     agent = get_or_create_agent(session_id, user_id, auth_header)
-    stream = agent.stream_async(payload.get("prompt"))
+    stream = agent.stream_async(prompt)
     async for event in stream:
         if "data" in event and isinstance(event["data"], str):
             yield event["data"]

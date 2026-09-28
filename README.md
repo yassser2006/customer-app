@@ -38,115 +38,131 @@ At a high level, the flow is:
 
 The following screenshots capture representative validation scenarios for the chat experience and the policy-aware support flow.
 
-### 1. Clean chat
+### 1. Clean chat — agent response
 
 ![Clean chat](image/1-new-chat-s1.png)
 
-This shows the empty support chat before the user sends a message, confirming the chat UI loads correctly and is ready for a new session.
+This is an agent response proof: the support UI loads with an empty chat and the assistant is ready to engage in a new session.
 
-The starting state shows an empty chat session before any customer message is sent, validating the UI and session initialization path.
+The screenshot confirms the chat interface initializes correctly and that the conversation state starts clean before a user prompt is sent.
 
-### 2. Greeting
+### 2. Greeting — agent response
 
 ![Greeting](image/2-Greeting-s1.png)
 
-The agent responds politely to a simple greeting and confirms it is ready to assist with support requests.
+This is an agent response proof: the assistant responds naturally to a greeting and confirms it is ready to help with support requests.
 
-This shows the agent responding naturally to a greeting and confirming it is ready to help with support queries.
+The message demonstrates a standard conversational turn from the runtime and validates that the agent is live and responding coherently.
 
-### 3. Checking an order
+### 3. Checking an order — agent response
 
 ![Checking an order](image/3-checking-orders-s1.png)
 
-The user asks about an order status, and the agent uses its order lookup capability to retrieve the relevant details.
+This is an agent response proof: the customer asks about an order, and the assistant uses the order lookup tool to return the relevant status and purchase details.
 
-The customer asks about an order, and the agent uses the order lookup tool to return the relevant status and purchase details.
+The evidence shows the agent can answer a transactional query using its tool-backed workflow rather than relying on static text.
 
-### 4. Asking about the customer name
+### 4. Asking about the customer name — agent response
 
 ![Name lookup](image/4-name-s1.png)
 
-The agent does not yet know the user’s name from memory, so the customer provides it and the conversation continues normally.
+This is an agent response proof: the assistant does not yet know the customer name from memory, so the conversation proceeds normally after the user provides it.
 
-The agent does not know the customer name from context, so the customer provides it and the conversation continues normally. This demonstrates the difference between memory state and a first-time conversational context.
+The screenshot shows the distinction between a first-turn context and a memory-backed session, highlighting that the agent responds appropriately once the user supplies new context.
 
-### 5. Memory working across sessions
+### 5. Memory working across sessions — agent response
 
 ![Memory across sessions](image/5-Memory-s2.png)
 
-A new chat session still remembers customer details from a previous interaction, demonstrating long-term conversational memory.
+This is an agent response proof: a new session still recalls prior customer information and answers using remembered context.
 
-The agent recognizes the customer in a new session and answers using remembered context, confirming that memory persists across separate conversations.
+The evidence confirms that memory persistence is working between separate conversations and that the assistant can personalize follow-up responses.
 
-### 6. Refund under $1,000
+### 6. Refund under $1,000 — gateway/policy proof
 
 ![Refund under $1,000](image/6-refund-under-1000-s2-p1.png)
 
-The customer requests a refund below policy limits, and the agent proceeds with the approved refund flow.
+This is a gateway/policy proof: the customer requests a refund below the policy threshold, and the request proceeds through the authorized workflow.
 
-The customer requests a refund within the allowed threshold, and the agent follows the workflow for a permitted refund action.
+The screenshot shows the approved refund path and confirms the runtime is not blocking valid low-value refund requests.
 
-### 7. Refund under $1,000 continuation
+### 7. Refund under $1,000 continuation — gateway/policy proof
 
 ![Refund continuation](image/7-refund-under-1000-s2-p2.png)
 
-The same refund case continues to completion, showing the agent following the approved workflow without violating policy.
+This is a gateway/policy proof: the same valid refund request continues to completion without violating the policy boundary.
 
-This continues the same refund flow and shows the agent completing the supported policy path without interruption.
+The image demonstrates the authorized path remains consistent through the end of the workflow and shows the permitted refund flow is being enforced as intended.
 
-### 8. Refunding a previously refunded order
+### 8. Refunding a previously refunded order — backend evidence
 
 ![Duplicate refund attempt](image/8-refund-under-1000-s2-duplicated.png)
-The agent detects that the order was already refunded and prevents a duplicate refund instead of repeating the action.
-This demonstrates the retry and duplicate-protection behavior: the system does not create a duplicate refund when the same action is attempted again.
 
-### 9. Refunding a canceled order
+This is backend evidence: the system detects that the order was already refunded and prevents a duplicate refund instead of creating a second one.
+
+The screenshot demonstrates idempotency and duplicate-protection behavior in the refund backend rather than just a conversational response.
+
+### 9. Refunding a canceled order — backend evidence
 
 ![Canceled order refund](image/9-refund-under-1000-s2-cancelled.png)
 
-The agent recognizes the order is canceled and blocks the refund flow because the request is not valid for that order state.
+This is backend evidence: the refund backend recognizes that the order is canceled and blocks the refund flow because the request is invalid for that order state.
 
-The agent handles a canceled-order scenario and prevents a refund flow that should not proceed for an order in an invalid state.
+The image shows the business rule is enforced at the operational layer and not just suggested by the assistant response.
 
-### 10. Refund above $1,000
+### 10. Refund above $1,000 — gateway/policy proof
 
 ![Refund above threshold denied](image/10-refund-above-1000-s3-refused.png)
 
-The refund request exceeds the allowed limit, so the agent refuses the action and enforces the policy guardrail.
+This is a gateway/policy proof: the request exceeds the allowed limit, so the agent is denied and the policy guardrail is enforced.
 
-This is the denial case. The refund request exceeds the policy threshold, and the agent is blocked by the authorization guard, showing the policy enforcement result: refund greater than $1,000 is denied.
+The denial case confirms the authorization boundary is active and that larger refund amounts are rejected at the policy layer.
 
-These screenshots together illustrate the main customer support path, memory continuity, refund authorization logic, duplicate-prevention behavior, and policy enforcement during failure and edge scenarios.
+These screenshots together distinguish between agent behavior, runtime policy enforcement, and backend business-logic validation so the evidence is clearer to reviewers.
 
 ### Additional validation screenshots
 
+#### Prompt injection attempt — gateway/policy proof
+
 ![Prompt injection attempt](image/11-prompt-injection.png)
 
-This screenshot shows the system resisting a prompt-injection attempt and keeping the agent on the safe support workflow.
+This is a gateway/policy proof: the system resists a prompt-injection attempt and keeps the assistant inside the allowed support workflow.
+
+#### Refund exact $1,000 continuation — gateway/policy proof
 
 ![Refund exact $1,000 continuation](image/12-%20refund-exact-1000-p1.png)
 
-This case validates the policy boundary at the exact $1,000 threshold, confirming the refund is allowed when it meets the limit.
+This is a gateway/policy proof: the boundary case at exactly $1,000 is allowed and remains within the permitted refund limit.
+
+#### Refund exact $1,000 completion — backend evidence
 
 ![Refund exact $1,000 completion](image/13-%20refund-exact-1000-p2.png)
 
-The workflow completes for the exact-threshold refund, proving the system behaves correctly at the edge of the approval rule.
+This is backend evidence: the exact-threshold refund completes successfully without triggering a policy denial, confirming the edge case is handled correctly.
+
+#### Refund over $1,000 part 1 — gateway/policy proof
 
 ![Refund over $1,000 part 1](image/14-%20refund-exact-1001-p1.png)
 
-This image captures the start of a refund above the limit, where the agent begins evaluating whether the request is authorized.
+This is a gateway/policy proof: the conversation begins with a refund request above the threshold, which triggers the authorization check before the flow proceeds.
+
+#### Refund over $1,000 part 2 — gateway/policy proof
 
 ![Refund over $1,000 part 2](image/15-%20refund-exact-1001-p2.png)
 
-The continuation shows the agent enforcing the denial path when the request exceeds the maximum allowed refund amount.
+This is a gateway/policy proof: the denial path is enforced when the requested refund exceeds the maximum allowed amount.
+
+#### Evaluation metrics — backend evidence
 
 ![Evaluation metrics](image/16-Evaluation-metrics.png)
 
-This screenshot summarizes the evaluation metrics used to verify the support agent’s quality, safety, and policy compliance.
+This is backend evidence: the evaluation summary shows the measured quality, safety, and policy-compliance checks used to validate the assistant.
+
+#### Different memory states — agent response
 
 ![Different memory states](image/17-Different-memory.png)
 
-This image highlights how memory context differs across conversations and shows why personalized support remains consistent over time.
+This is an agent response proof: the assistant’s memory context differs across conversations, showing how personalized support remains consistent while the state stays scoped by user and session.
 
 ## Major components
 
