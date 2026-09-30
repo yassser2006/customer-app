@@ -127,7 +127,7 @@
         {
           "name": "refund_limit_policy",
           "description": "Allow refunds under 1000 dollars only",
-          "statement": "permit(principal, action == AgentCore::Action::\"ProcessRefund___process_refund\", resource == AgentCore::Gateway::\"arn:aws:bedrock-agentcore:us-east-1:000000000000:gateway/example-gateway\") when { context.input.amount < 1000 };",
+          "statement": "permit(principal, action == AgentCore::Action::\"ProcessRefund___process_refund\", resource == AgentCore::Gateway::\"arn:aws:bedrock-agentcore:us-east-1:000000000000:gateway/example-gateway\") when { context.input.amount <= 1000 };",
           "validationMode": "FAIL_ON_ANY_FINDINGS",
           "enforcementMode": "ACTIVE",
           "authorizationPhase": "INITIATE"
